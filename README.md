@@ -42,6 +42,27 @@ La base SQLite (`mpg-nba.db`) est créée et remplie automatiquement au premier 
 - SQLite via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
 - Simulation déterministe (graine par match/joueur) : les résultats sont stables et partagés entre toutes les ligues
 
+## Données NBA réelles (API gratuite)
+
+Par défaut, le jeu utilise son moteur de simulation. Tu peux remplacer n'importe quelle journée
+par les **vrais matchs et box scores NBA** grâce à l'API publique d'ESPN — la seule option
+réellement gratuite avec feuilles de stats complètes, **sans clé ni inscription** :
+
+```bash
+# Importe la vraie semaine NBA du 5 au 11 janvier 2026 comme journée 1
+npx tsx scripts/sync-espn.ts 1 2026-01-05
+```
+
+Le script récupère tous les matchs terminés de la semaine (scoreboard) puis chaque box score,
+rapproche les joueurs par nom et calcule leurs points fantasy. « Jouer la journée » dans l'app
+utilise alors ces stats réelles pour les duels de la ligue. À lancer journée par journée, en
+suivant le vrai calendrier NBA (saison : octobre à juin).
+
+Alternatives évaluées : [balldontlie](https://www.balldontlie.io/) (gratuit limité aux
+équipes/joueurs/matchs, les stats par joueur sont payantes), `stats.nba.com` (gratuit mais bloque
+agressivement les requêtes hors navigateur), [Highlightly](https://highlightly.net/nba-api/)
+(plan gratuit à 100 requêtes/jour, clé requise).
+
 ## Configuration
 
 | Variable | Défaut | Description |
