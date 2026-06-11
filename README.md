@@ -42,21 +42,25 @@ La base SQLite (`mpg-nba.db`) est créée et remplie automatiquement au premier 
 - SQLite via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
 - Simulation déterministe (graine par match/joueur) : les résultats sont stables et partagés entre toutes les ligues
 
-## Données NBA réelles (API gratuite)
+## Données NBA réelles (API gratuite ESPN)
 
-Par défaut, le jeu utilise son moteur de simulation. Tu peux remplacer n'importe quelle journée
-par les **vrais matchs et box scores NBA** grâce à l'API publique d'ESPN — la seule option
-réellement gratuite avec feuilles de stats complètes, **sans clé ni inscription** :
+Les vraies données NBA sont la **source principale** du jeu, via l'API publique d'ESPN — la
+seule option réellement gratuite avec feuilles de stats complètes, **sans clé ni inscription**.
+
+Quand le commissaire clique sur **« Jouer la journée »**, l'app importe automatiquement les
+matchs terminés de la vraie semaine NBA correspondante (journée 1 = semaine de
+`NBA_SEASON_START`, 20 octobre 2025 par défaut) : scoreboard, box scores, rapprochement des
+joueurs par nom, calcul des points fantasy. Si l'API est injoignable ou que la semaine n'a aucun
+match (hors saison), la semaine est **simulée en secours** — le jeu reste jouable hors-ligne.
+
+Pour forcer la simulation : `NBA_DATA_SOURCE=simulation`.
+
+Import manuel d'une journée avec une date personnalisée :
 
 ```bash
 # Importe la vraie semaine NBA du 5 au 11 janvier 2026 comme journée 1
 npx tsx scripts/sync-espn.ts 1 2026-01-05
 ```
-
-Le script récupère tous les matchs terminés de la semaine (scoreboard) puis chaque box score,
-rapproche les joueurs par nom et calcule leurs points fantasy. « Jouer la journée » dans l'app
-utilise alors ces stats réelles pour les duels de la ligue. À lancer journée par journée, en
-suivant le vrai calendrier NBA (saison : octobre à juin).
 
 Alternatives évaluées : [balldontlie](https://www.balldontlie.io/) (gratuit limité aux
 équipes/joueurs/matchs, les stats par joueur sont payantes), `stats.nba.com` (gratuit mais bloque
@@ -69,3 +73,5 @@ agressivement les requêtes hors navigateur), [Highlightly](https://highlightly.
 | --- | --- | --- |
 | `DB_PATH` | `./mpg-nba.db` | Chemin du fichier SQLite |
 | `SESSION_SECRET` | valeur de dev | Secret de signature des sessions (à définir en production) |
+| `NBA_SEASON_START` | `2025-10-20` | Lundi de la semaine NBA correspondant à la journée 1 |
+| `NBA_DATA_SOURCE` | (auto) | `simulation` pour désactiver l'import ESPN et tout simuler |

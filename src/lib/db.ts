@@ -54,7 +54,8 @@ function migrate(db: Database.Database) {
     away_team_id INTEGER NOT NULL REFERENCES nba_teams(id),
     home_score INTEGER,
     away_score INTEGER,
-    played INTEGER NOT NULL DEFAULT 0
+    played INTEGER NOT NULL DEFAULT 0,
+    source TEXT NOT NULL DEFAULT 'simulation' -- simulation | espn
   );
   CREATE INDEX IF NOT EXISTS idx_nba_games_gameday ON nba_games(gameday);
 
@@ -142,6 +143,12 @@ function migrate(db: Database.Database) {
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   `);
+
+  // Bases créées avant l'ajout de la colonne source.
+  const cols = db.prepare("PRAGMA table_info(nba_games)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === 'source')) {
+    db.exec("ALTER TABLE nba_games ADD COLUMN source TEXT NOT NULL DEFAULT 'simulation'");
+  }
 }
 
 function seed(db: Database.Database) {

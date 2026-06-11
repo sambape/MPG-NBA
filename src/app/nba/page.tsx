@@ -23,7 +23,7 @@ export default async function NbaPage({
        WHERE g.gameday = ? ORDER BY g.id`
     )
     .all(gd) as {
-      id: number; played: number; home_score: number | null; away_score: number | null;
+      id: number; played: number; source: string; home_score: number | null; away_score: number | null;
       home_abbr: string; home_city: string; home_name: string;
       away_abbr: string; away_city: string; away_name: string;
     }[];
@@ -58,7 +58,14 @@ export default async function NbaPage({
 
       <div className="grid2">
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Journée {gd} — {games.length} matchs</h2>
+          <div className="flex-between">
+            <h2 style={{ margin: 0 }}>Journée {gd} — {games.length} matchs</h2>
+            {games.some((g) => g.played) && (
+              games.some((g) => g.source === 'espn')
+                ? <span className="badge green">Stats réelles (ESPN)</span>
+                : <span className="badge dim">Simulation</span>
+            )}
+          </div>
           <table>
             <tbody>
               {games.map((g) => (

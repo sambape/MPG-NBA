@@ -117,7 +117,8 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
           </table>
           {isCommissioner && league.status === 'saison' && (
             <p className="muted">
-              « Jouer la journée » simule la semaine NBA (tous les matchs) puis calcule les duels de la ligue.
+              « Jouer la journée » importe les vrais matchs de la semaine NBA (via ESPN, simulation
+              en secours) puis calcule les duels de la ligue.
             </p>
           )}
         </div>

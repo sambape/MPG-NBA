@@ -15,6 +15,8 @@ function assert(cond: unknown, msg: string): asserts cond {
   if (!cond) throw new Error(`ÉCHEC : ${msg}`);
 }
 
+async function main() {
+
 const db = getDb();
 
 // Joueurs du jeu
@@ -85,10 +87,12 @@ assert(setLineup(leagueId, samy.id, newStarters).ok, 'setLineup');
 assert(activateBoost(leagueId, samy.id).ok, 'activateBoost');
 console.log('✓ Compo modifiée et boost MVP activé');
 
-// Saison complète
+// Saison complète (en simulation pure, sans appel réseau)
+process.env.NBA_DATA_SOURCE = 'simulation';
 for (let gd = 1; gd <= GAMEDAYS; gd++) {
-  const res = playGameday(leagueId, userIds[0]);
+  const res = await playGameday(leagueId, userIds[0]);
   assert(res.ok, `journée ${gd} : ${res.error}`);
+  assert(res.source === 'simulation', `journée ${gd} : source attendue simulation, reçu ${res.source}`);
 }
 const league = getLeague(leagueId)!;
 assert(league.status === 'terminee', 'saison terminée');
@@ -144,3 +148,6 @@ assert(getRoster(league2, memberA.id).length === 10, 'effectif toujours à 10 ap
 console.log('✓ Marché des transferts : échange validé, effectif intact');
 
 console.log('\n🏆 Tous les tests passent !');
+}
+
+main().catch((err) => { console.error(err); process.exit(1); });

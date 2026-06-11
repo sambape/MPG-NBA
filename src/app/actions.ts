@@ -126,7 +126,7 @@ export async function activateBoostAction(leagueId: number) {
 
 export async function playGamedayAction(leagueId: number) {
   const { user } = await requireMember(leagueId);
-  playGameday(leagueId, user.id);
+  await playGameday(leagueId, user.id);
   revalidatePath(`/league/${leagueId}`);
 }
 

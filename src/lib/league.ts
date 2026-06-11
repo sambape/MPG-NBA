@@ -3,6 +3,7 @@ import { getDb } from './db';
 import { GAMEDAYS } from './sim';
 import { simulatePlayerGame, benchFiller, type Pos } from './sim';
 import { POSITIONS } from './seed';
+import { importEspnWeek } from './espn';
 
 export const BUDGET = 500;
 export const ROSTER_SIZE = 10;
@@ -485,13 +486,31 @@ function computeMemberGameday(db: Database.Database, leagueId: number, member: M
   return { total, lines };
 }
 
-export function playGameday(leagueId: number, userId: number): { ok: boolean; error?: string } {
+export async function playGameday(leagueId: number, userId: number): Promise<{ ok: boolean; error?: string; source?: string }> {
   const db = getDb();
   const league = getLeague(leagueId);
   if (!league || league.status !== 'saison') return { ok: false, error: 'La saison n’est pas en cours.' };
   if (league.commissioner_id !== userId) return { ok: false, error: 'Seul le commissaire peut lancer la journée.' };
 
   const gameday = league.current_gameday;
+
+  // Source principale : les vrais matchs de la semaine NBA via ESPN.
+  // En cas d'échec (réseau, hors saison), la semaine est simulée.
+  let source = 'simulation';
+  const alreadyImported = db
+    .prepare("SELECT COUNT(*) AS c FROM nba_games WHERE gameday = ? AND played = 1")
+    .get(gameday) as { c: number };
+  if (alreadyImported.c === 0) {
+    const res = await importEspnWeek(gameday);
+    if (res.ok) source = 'espn';
+    else console.warn(`Journée ${gameday} : repli sur la simulation — ${res.reason}`);
+  } else {
+    const existing = db
+      .prepare("SELECT source FROM nba_games WHERE gameday = ? AND played = 1 LIMIT 1")
+      .get(gameday) as { source: string };
+    source = existing.source;
+  }
+
   db.transaction(() => {
     ensureNbaWeekPlayed(db, gameday);
 
@@ -516,7 +535,7 @@ export function playGameday(leagueId: number, userId: number): { ok: boolean; er
       db.prepare('UPDATE leagues SET current_gameday = current_gameday + 1 WHERE id = ?').run(leagueId);
     }
   })();
-  return { ok: true };
+  return { ok: true, source };
 }
 
 // ---------- Classement ----------
