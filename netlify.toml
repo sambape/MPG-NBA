@@ -1,0 +1,13 @@
+# Déploiement Netlify de Mon Petit Parquet (Next.js 15)
+# Le plugin officiel Next.js gère le routage, les Server Actions et les
+# fonctions serverless automatiquement.
+
+[build]
+  command = "npm run build"
+
+[build.environment]
+  # better-sqlite3 fournit des binaires précompilés pour Node 22.
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

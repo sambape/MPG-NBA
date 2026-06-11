@@ -36,6 +36,26 @@ La base SQLite (`mpg-nba.db`) est créée et remplie automatiquement au premier 
 4. La saison démarre : chacun règle sa compo, puis le commissaire clique sur **« Jouer la journée »** — la semaine NBA est simulée (tous les matchs) et les duels de la ligue sont calculés.
 5. Au bout des 26 journées, le premier du classement est sacré champion. 🏆
 
+## Déploiement sur Netlify
+
+Le dépôt est prêt pour Netlify (`netlify.toml` + plugin officiel Next.js) :
+
+1. Sur [app.netlify.com](https://app.netlify.com), **Add new site → Import an existing project** et choisis ce dépôt GitHub.
+2. Netlify détecte Next.js automatiquement (commande `npm run build`, plugin `@netlify/plugin-nextjs`). Rien à régler.
+3. Recommandé : ajoute une variable d'environnement `SESSION_SECRET` (une longue chaîne aléatoire) dans **Site settings → Environment variables**.
+4. Deploy. 🎉
+
+> [!WARNING]
+> **Persistance des données sur Netlify.** Netlify est *serverless* : le système de fichiers est
+> en lecture seule (sauf `/tmp`) et éphémère. La base SQLite est donc placée dans `/tmp` et
+> **réinitialisée à chaque démarrage à froid** — les comptes, ligues et résultats ne sont pas
+> conservés durablement et ne sont pas partagés entre instances. C'est parfait pour une démo,
+> mais **pas pour une vraie saison entre amis**.
+>
+> Pour une persistance réelle, branche une base SQLite hébergée **[Turso / libSQL](https://turso.tech/)**
+> (compatible, généreux niveau gratuit) : il suffit de remplacer `better-sqlite3` par
+> `@libsql/client` dans `src/lib/db.ts` (même dialecte SQL). Dis-le-moi et je fais la bascule.
+
 ## Stack technique
 
 - [Next.js 15](https://nextjs.org/) (App Router, Server Actions, React 19)

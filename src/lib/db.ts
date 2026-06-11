@@ -3,7 +3,14 @@ import path from 'path';
 import { TEAMS, PLAYERS, ratingToCote } from './seed';
 import { generateNbaSchedule, GAMEDAYS } from './sim';
 
-const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'mpg-nba.db');
+// Sur Netlify (serverless), seul /tmp est accessible en écriture. Le fichier
+// SQLite y est éphémère : il est recréé et re-seedé à chaque démarrage à froid,
+// et n'est pas partagé entre instances. Voir le README pour passer à une base
+// persistante (Turso/libSQL) en production.
+const DEFAULT_DB_PATH = process.env.NETLIFY
+  ? '/tmp/mpg-nba.db'
+  : path.join(process.cwd(), 'mpg-nba.db');
+const DB_PATH = process.env.DB_PATH || DEFAULT_DB_PATH;
 
 declare global {
   // eslint-disable-next-line no-var
